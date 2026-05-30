@@ -1,0 +1,13 @@
+name: mermaid_diagrams
+title: Mermaid Diagrams
+description: |
+  Renders Mermaid diagram code blocks as interactive SVG diagrams in the chat UI.
+  Includes a skill that teaches the agent Mermaid syntax and behavioral rules that
+  encourage diagram usage when users need visual explanations.
+version: "0.1.0"
+author: "Omar Nahhas"
+license: Apache-2.0
+homepage: ""
+per_project_config: false
+per_agent_config: false
+always_enabled: false
