@@ -82,8 +82,20 @@ function openZoomModal(svgHtml) {
   const svg = content.querySelector('svg');
   if (svg) {
     svg.style.maxWidth = 'none';
-    svg.style.width = 'auto';
-    svg.style.height = 'auto';
+    // Mermaid renders the SVG with width="100%" and no height attribute. Inside the
+    // flex-centered modal content (which has no intrinsic width), width:auto/height:auto
+    // collapses the SVG to 0x0. Derive an explicit pixel size from the viewBox so the
+    // SVG has a real box that the zoom transform can scale.
+    const vb = (svg.getAttribute('viewBox') || '').split(/\s+/).map(Number);
+    if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
+      svg.style.width = vb[2] + 'px';
+      svg.style.height = vb[3] + 'px';
+    } else {
+      svg.style.width = 'auto';
+      svg.style.height = 'auto';
+    }
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
   }
 
   function updateTransform() {
