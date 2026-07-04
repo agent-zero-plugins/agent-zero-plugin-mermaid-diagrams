@@ -1,0 +1,6 @@
+plugin_dir: usr/plugins/mermaid_diagrams
+display_name: Mermaid Diagrams
+# If the plugin has agent-driven behaviour needing an e2e seam, enable it here:
+# e2e_pod_env:
+#   A0_MERMAID_DIAGRAMS_TEST_PROBE: "1"
+devkit_major: 2
