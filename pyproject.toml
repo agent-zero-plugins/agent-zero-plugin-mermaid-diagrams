@@ -1,0 +1,3 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# self-contained unit tests (fake helpers); no plugin import path needed.
