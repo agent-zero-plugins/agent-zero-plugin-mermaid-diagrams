@@ -14,7 +14,7 @@ import types
 
 _HOOK = (
     pathlib.Path(__file__).resolve().parents[1]
-    / "mermaid_diagrams" / "extensions" / "python" / "_functions" / "helpers"
+    / "usr" / "plugins" / "mermaid_diagrams" / "extensions" / "python" / "_functions" / "helpers"
     / "prompt_fragments" / "get_prompt_fragments" / "end" / "_51_publish_mermaid_nudge.py"
 )
 
