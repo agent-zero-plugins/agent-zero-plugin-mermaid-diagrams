@@ -1,3 +1,5 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# self-contained unit tests (fake helpers); no plugin import path needed.
+# unit tests use fake helpers (no A0 import path); the L1 shape test uses the
+# devkit's a0_plugin_testkit package, resolved from the submodule.
+pythonpath = ["tests/_testkit/src"]

@@ -8,3 +8,18 @@ Feature: Rendering mermaid diagrams
     Given I am in a chat
     When an invalid mermaid diagram is posted in the chat
     Then an error is shown for it and the chat keeps working
+
+  Scenario: A sequence diagram is rendered   # BEH-6
+    Given I am in a chat
+    When a sequence diagram is posted in the chat
+    Then it is rendered as a diagram
+
+  Scenario: A state diagram is rendered   # BEH-6
+    Given I am in a chat
+    When a state diagram is posted in the chat
+    Then it is rendered as a diagram
+
+  Scenario: Non-mermaid code blocks are left alone   # BEH-7
+    Given I am in a chat
+    When a python code block is posted in the chat
+    Then the code block stays a plain code block
