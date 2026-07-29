@@ -34,10 +34,6 @@ const postCode = (page: any, code: string, lang: string) =>
 
 const postMermaid = (page: any, code: string) => postCode(page, code, "mermaid");
 
-// The plugin processed the block iff the source code carries data-mermaid-processed.
-const processed = (page: any) =>
-  page.evaluate(() => !!document.querySelector("code.language-mermaid[data-mermaid-processed]"));
-
 // The plugin's own webui surface is mounted (proves plugin installed+enabled;
 // keeps negative scenarios honest under the seam-off red-proof).
 const rendererMounted = (page: any) =>
@@ -47,10 +43,14 @@ const rendererMounted = (page: any) =>
 
 const SOURCE_FLOW = "graph TD; A[Start] --> B[Finish]";
 
+// IMPORTANT: never assert on data-mermaid-processed — the renderer sets it on
+// the code element and then REPLACES the whole wrapper (success AND error
+// paths), so the marker is transient and polling it is a race (BEH-2/BEH-6
+// went red in CI exactly this way). Assert the persistent END STATE instead:
+// the diagram container / error card that replaces the block.
 const renderedDiagram = async (page: any) => {
   await postMermaid(page, SOURCE_FLOW);
-  await expect.poll(() => processed(page), { timeout: 25000 }).toBe(true);
-  await expect(page.locator(".mermaid-diagram-container svg").first()).toBeVisible({ timeout: 5000 });
+  await expect(page.locator(".mermaid-diagram-container svg").first()).toBeVisible({ timeout: 25000 });
 };
 
 // ── Givens ─────────────────────────────────────────────────────────────
@@ -83,15 +83,16 @@ When("a python code block is posted in the chat", async ({ loggedInPage }: any) 
 // ── Thens: rendering ───────────────────────────────────────────────────
 
 Then("it is rendered as a diagram", async ({ loggedInPage }: any) => {
-  await expect.poll(() => processed(loggedInPage), { timeout: 25000 }).toBe(true);
-  const svgs = await loggedInPage.locator(".mermaid-diagram-container svg, svg[id^='mermaid']").count();
-  expect(svgs, "a rendered mermaid SVG").toBeGreaterThan(0);
+  // End state: the wrapper is replaced by a diagram container holding an SVG.
+  await expect(loggedInPage.locator(".mermaid-diagram-container svg").first()).toBeVisible({
+    timeout: 25000,
+  });
   expect(await loggedInPage.locator(".mermaid-error-source").count()).toBe(0);
 });
 
 Then("an error is shown for it and the chat keeps working", async ({ loggedInPage }: any) => {
-  await expect.poll(() => processed(loggedInPage), { timeout: 25000 }).toBe(true);
-  await expect(loggedInPage.locator(".mermaid-error-source")).toBeVisible({ timeout: 5000 });
+  // End state: the wrapper is replaced by the error card carrying the source.
+  await expect(loggedInPage.locator(".mermaid-error-source")).toBeVisible({ timeout: 25000 });
   expect(await loggedInPage.title()).toBeTruthy();
 });
 
