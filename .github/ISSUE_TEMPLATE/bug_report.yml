@@ -1,0 +1,46 @@
+name: Bug report
+description: A diagram doesn't render, an interaction misbehaves, or the plugin breaks something.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect vs what you saw?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Mermaid source
+      description: The exact fenced mermaid block that triggered the problem (if applicable).
+      render: text
+  - type: input
+    id: a0-version
+    attributes:
+      label: Agent Zero version
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: From Settings → Plugins, or plugin.yaml.
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser + version
+  - type: checkboxes
+    id: cdn
+    attributes:
+      label: Environment
+      options:
+        - label: The browser can reach cdn.jsdelivr.net (rendering requires it)
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console errors
+      description: Open DevTools → Console and paste anything red.
+      render: text

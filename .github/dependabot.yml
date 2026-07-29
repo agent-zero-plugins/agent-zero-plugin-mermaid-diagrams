@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # CI workflow actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: ["dependencies", "ci"]
+
+  # Playwright BDD toolchain for the e2e suite
+  - package-ecosystem: npm
+    directory: /tests/e2e
+    schedule:
+      interval: weekly
+    labels: ["dependencies", "tests"]
+    # Playwright majors can shift selector/wait semantics — group patch/minor.
+    groups:
+      playwright:
+        patterns: ["*playwright*"]
