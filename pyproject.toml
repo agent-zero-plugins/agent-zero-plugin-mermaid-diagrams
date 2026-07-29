@@ -3,3 +3,6 @@ testpaths = ["tests"]
 # unit tests use fake helpers (no A0 import path); the L1 shape test uses the
 # devkit's a0_plugin_testkit package, resolved from the submodule.
 pythonpath = ["tests/_testkit/src"]
+# The testkit's own self-test suite belongs to the testkit repo, not to its
+# consumers — don't collect it here.
+norecursedirs = ["tests/_testkit"]
