@@ -19,7 +19,7 @@ jobs:
           submodules: false
       - name: Mint App token (private submodule clone)
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.SKILLS_SYNC_APP_CLIENT_ID }}
           private-key: ${{ secrets.SKILLS_SYNC_APP_PRIVATE_KEY }}
