@@ -48,6 +48,46 @@ flowchart TD
 
 The renderer ships as a `sidebar-end` webui extension (`mermaid-renderer.html`) and loads mermaid@11 from the jsDelivr CDN at page load. No server-side components: no API handlers, no tools, no hooks, no configuration state.
 
+## Usage
+
+Every behaviour below is covered by a BDD scenario in [`tests/e2e/features/`](tests/e2e/features/),
+and [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) shows each one as a screenshot captured from a passing
+run — so what you read here is what CI proves on every push.
+
+### Nothing to drive
+
+There is no button to press. A MutationObserver watches the chat, and any ` ```mermaid ` block is
+replaced with a rendered SVG the moment it appears — including while a reply is still streaming in.
+
+Flowcharts, sequence diagrams and state diagrams each have their own asserted scenario; the rest of
+the mermaid@11 set (class, ER, mindmaps, timelines, …) rides on the same path.
+
+### Reading a diagram properly
+
+Click a diagram, or use its zoom button, for a full-screen viewer with wheel zoom-to-pointer, drag
+panning, zoom in/out/reset, and **Escape** to close. This is the difference between "there is a
+diagram in the transcript" and "I can actually read the diagram."
+
+Hover for the toolbar to **show or hide the original Mermaid source**, or **copy** it — useful when
+you want to keep the diagram in a doc rather than only in the chat.
+
+### When the diagram is wrong
+
+Invalid Mermaid produces an inline error card showing the offending source. It does **not** break the
+chat, and the surrounding conversation stays usable — `An invalid diagram shows an error, not a
+crash` is an asserted scenario, because a rendering plugin that can take the page down with it is
+worse than no rendering plugin.
+
+**Non-mermaid code blocks are left alone.** The plugin claims only the fences it can render.
+
+### Getting the agent to draw
+
+The bundled `mermaid` skill teaches the syntax, and a system-prompt nudge steers the agent toward a
+diagram on cues like "show me", "visualize" or "draw". The same nudge is published as an enumerable
+PromptFragment, so non-native harnesses (the Claude bridge, for instance) pick it up too.
+
+---
+
 ## Installation
 
 ### Plugin Hub
