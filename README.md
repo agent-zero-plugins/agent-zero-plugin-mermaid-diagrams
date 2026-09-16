@@ -6,108 +6,51 @@
 
 <!-- BADGES:END -->
 
-Turn fenced ` ```mermaid ` code blocks in your Agent Zero chats into **interactive SVG diagrams** — with zoom, pan, source view, and one-click copy. The plugin also teaches your agent *when* and *how* to reach for a diagram: it bundles a Mermaid syntax skill and injects a behavioral nudge so the agent visualizes architectures, flows, and state machines instead of describing them in prose.
+Turns ` ```mermaid ` code blocks in Agent Zero chats into **interactive SVG diagrams** — with zoom, pan, source view, and one-click copy. It also nudges the agent to _draw_ instead of describe: a bundled Mermaid skill plus a system-prompt hint make diagrams show up when you ask to visualize something.
 
-| Rendered flowchart | Sequence diagram |
-|---|---|
-| ![Flowchart rendered in chat](docs/screenshot-flowchart.png) | ![Sequence diagram rendered in chat](docs/screenshot-sequence.png) |
+| Rendered flowchart                                           | Sequence diagram                                                   |
+| ------------------------------------------------------------ | ------------------------------------------------------------------ |
+| ![Flowchart rendered in chat](docs/flowchart-diagram.png) | ![Sequence diagram rendered in chat](docs/sequence-diagram.png) |
 
 ## Features
 
-- **Live rendering** — a MutationObserver watches the chat DOM and replaces every ` ```mermaid ` block with a rendered SVG the moment it appears. All mermaid@11 diagram types: flowcharts, sequence, state, class, ER, mindmaps, timelines, …
-- **Zoom viewer** — click any diagram (or its zoom button) for a full-screen viewer with wheel zoom-to-pointer, drag panning, zoom in/out/reset buttons, and Esc to close.
-
+- **Live rendering** : a MutationObserver watches the chat DOM and replaces every ` ```mermaid` block with a rendered SVG the moment it appears. All mermaid@11 diagram types: flowcharts, sequence, state, class, ER, mindmaps, timelines, …
+- **Zoom viewer** : click a diagram for full-screen view: wheel zoom, drag pan, reset, Esc to close.
   ![Zoom viewer](docs/screenshot-zoom-modal.png)
-
-- **Source actions** — hover a diagram for the toolbar: toggle the original Mermaid source, or copy it to the clipboard.
-- **Graceful errors** — invalid Mermaid never breaks the chat; you get an inline error card with the offending source:
-
-  ![Error card](docs/screenshot-error.png)
-
-- **Agent guidance** — the bundled `mermaid` skill teaches syntax; a system-prompt nudge steers the agent to diagram architectures/flows on "show me / visualize / draw" cues; the same nudge is published as an enumerable PromptFragment for non-native harnesses (e.g. the Claude bridge).
+- **Source actions** : hover for the toolbar: show/hide the original Mermaid source, or copy it to clipboard.
+- **Graceful errors** : invalid Mermaid shows an inline error card with the source; the chat keeps working.
+  ![Error card](docs/error.png)
+- **Agent guidance** : the bundled skill teaches syntax; a prompt nudge steers the agent toward diagrams on "show me / visualize / draw" cues (published as a PromptFragment for non-native harnesses too).
 
 ## How it works
 
-```mermaid
-flowchart TD
-    subgraph Agent side
-        S[skills/mermaid/SKILL.md] -->|teaches syntax| A[Agent]
-        N[system_prompt nudge] -->|when to diagram| A
-        F[PromptFragment publisher] -->|enumerable nudge| H[Non-native harnesses]
-        A -->|replies with mermaid fence| C[Chat markdown]
-    end
-    subgraph Browser side
-        C -->|pre > code.language-mermaid| O[MutationObserver]
-        O --> R[mermaid.render → SVG]
-        R --> D[Diagram container]
-        D --> Z[Zoom viewer]
-        D --> T[Source toggle / copy]
-        R -->|parse error| E[Inline error card]
-    end
-```
+![How it works](docs/how-it-works.png)
 
-The renderer ships as a `sidebar-end` webui extension (`mermaid-renderer.html`) and loads mermaid@11 from the jsDelivr CDN at page load. No server-side components: no API handlers, no tools, no hooks, no configuration state.
+
+A `sidebar-end` webui extension, pinned to `mermaid 11.16.1` from the jsDelivr CDN. No server-side components — no API handlers, no tools, no config.
 
 ## Usage
 
-Every behaviour below is covered by a BDD scenario in [`tests/e2e/features/`](tests/e2e/features/),
-and [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) shows each one as a screenshot captured from a passing
-run — so what you read here is what CI proves on every push.
-
-### Nothing to drive
-
-There is no button to press. A MutationObserver watches the chat, and any ` ```mermaid ` block is
-replaced with a rendered SVG the moment it appears — including while a reply is still streaming in.
-
-Flowcharts, sequence diagrams and state diagrams each have their own asserted scenario; the rest of
-the mermaid@11 set (class, ER, mindmaps, timelines, …) rides on the same path.
-
-### Reading a diagram properly
-
-Click a diagram, or use its zoom button, for a full-screen viewer with wheel zoom-to-pointer, drag
-panning, zoom in/out/reset, and **Escape** to close. This is the difference between "there is a
-diagram in the transcript" and "I can actually read the diagram."
-
-Hover for the toolbar to **show or hide the original Mermaid source**, or **copy** it — useful when
-you want to keep the diagram in a doc rather than only in the chat.
-
-### When the diagram is wrong
-
-Invalid Mermaid produces an inline error card showing the offending source. It does **not** break the
-chat, and the surrounding conversation stays usable — `An invalid diagram shows an error, not a
-crash` is an asserted scenario, because a rendering plugin that can take the page down with it is
-worse than no rendering plugin.
-
-**Non-mermaid code blocks are left alone.** The plugin claims only the fences it can render.
-
-### Getting the agent to draw
-
-The bundled `mermaid` skill teaches the syntax, and a system-prompt nudge steers the agent toward a
-diagram on cues like "show me", "visualize" or "draw". The same nudge is published as an enumerable
-PromptFragment, so non-native harnesses (the Claude bridge, for instance) pick it up too.
+Nothing to drive. Any ` ```mermaid ` block the agent sends is rendered automatically; flowchart, sequence, and state diagrams each have an asserted [BDD scenario](tests/e2e/features/), and [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) shows each as a screenshot from a passing run. Non-mermaid code blocks are left untouched.
 
 ---
 
 ## Installation
 
-### Plugin Hub
+**Plugin Hub** — once listed in the [Plugin Index](https://github.com/agent0ai/a0-plugins): **Settings → Plugins → Mermaid Diagrams → Install**.
 
-Once listed in the [Plugin Index](https://github.com/agent0ai/a0-plugins): open **Settings → Plugins**, find **Mermaid Diagrams**, click **Install**.
+**Manual** (Zip)
 
-### Manual (zip)
+```bash
+make package        # → dist/mermaid_diagrams.zip
+```
 
-1. Build the zip (or grab one from a [release](../../releases)):
-   ```bash
-   make package        # → dist/mermaid_diagrams.zip
-   ```
-2. In Agent Zero: **Settings → Plugins → Install from file** → pick the zip.
-3. New chats pick the renderer up immediately; hard-refresh open tabs.
+Then **Settings → Plugins → Install from file** → pick the zip. New chats pick it up immediately; hard-refresh open tabs.
 
-> **Note:** rendering needs browser access to `cdn.jsdelivr.net` (mermaid@11 ESM). In offline environments diagrams stay as plain code blocks — nothing breaks.
 
 ## Configuration
 
-None. The plugin has no settings (`default_config.yaml` is intentionally empty), no per-project or per-agent state. Disable/uninstall from the Plugins panel reverts the chat to plain code blocks.
+None — no settings, no per-project or per-agent state. Uninstall from the Plugins panel reverts the chat to plain code blocks.
 
 ## Development
 
@@ -115,20 +58,18 @@ None. The plugin has no settings (`default_config.yaml` is intentionally empty),
 git clone --recurse-submodules https://github.com/agent-zero-plugins/agent-zero-plugin-mermaid-diagrams
 cd agent-zero-plugin-mermaid-diagrams
 
-make verify          # BDD static gates: feature-purity, honesty, traceability
+make verify                  # BDD static gates
 python -m pytest tests -q    # unit + L1 shape suite (needs tests/_testkit submodule)
-make e2e             # full behaviour BDD run on a nested disposable A0 (podman)
+make e2e                     # full behaviour BDD run on a nested disposable A0 (podman)
 ```
 
-### Test layout
+| Layer         | Where                              | What                                                                       |
+| ------------- | ---------------------------------- | -------------------------------------------------------------------------- |
+| L1 shape      | `tests/test_plugin_shape.py`       | static validator, deps/A0-API audits, dead hooks                           |
+| Unit seams    | `tests/test_mermaid_nudge.py` etc. | prompt nudge, fragment publisher, skill front-matter                       |
+| Behaviour BDD | `tests/e2e/features/` + `steps/`   | rendering (types, errors, negatives) + zoom/toggle/copy, against a live A0 |
 
-| Layer | Where | What |
-|---|---|---|
-| L1 shape | `tests/test_plugin_shape.py` | testkit static validator, deps/A0-API audits, dead hooks, thumbnail |
-| Unit seams | `tests/test_mermaid_nudge.py`, `tests/test_publish_nudge.py`, `tests/test_skill_contract.py` | prompt nudge, fragment publisher, skill front-matter |
-| Behaviour BDD | `tests/e2e/features/*.feature` + `steps/` | rendering (all types, errors, negatives) + zoom/toggle/copy, run against a live A0 |
-
-Specs live in `docs/spec/` (behaviour-spec → e2e.feature → steps-spec → implementation-plan). CI (`unit` + `plugin-e2e`) runs the whole pyramid including a seam-off red-proof — a scenario that passes without the plugin installed fails the build.
+Specs live in `docs/spec/`. CI runs the whole pyramid including a seam-off red-proof — a scenario that passes without the plugin fails the build.
 
 ## License
 
