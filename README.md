@@ -8,9 +8,9 @@
 
 Turns ` ```mermaid ` code blocks in Agent Zero chats into **interactive SVG diagrams** — with zoom, pan, source view, and one-click copy. It also nudges the agent to _draw_ instead of describe: a bundled Mermaid skill plus a system-prompt hint make diagrams show up when you ask to visualize something.
 
-| Rendered flowchart                                           | Sequence diagram                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------------ |
-| ![Flowchart rendered in chat](docs/flowchart-diagram.png) | ![Sequence diagram rendered in chat](docs/sequence-diagram.png) |
+A sequence diagram, rendered live in the chat:
+
+![Sequence diagram rendered in chat](docs/sequence-diagram.png)
 
 ## Features
 
@@ -25,7 +25,6 @@ Turns ` ```mermaid ` code blocks in Agent Zero chats into **interactive SVG diag
 ## How it works
 
 ![How it works](docs/how-it-works.png)
-
 
 A `sidebar-end` webui extension, pinned to `mermaid 11.16.1` from the jsDelivr CDN. No server-side components — no API handlers, no tools, no config.
 
@@ -46,7 +45,6 @@ make package        # → dist/mermaid_diagrams.zip
 ```
 
 Then **Settings → Plugins → Install from file** → pick the zip. New chats pick it up immediately; hard-refresh open tabs.
-
 
 ## Configuration
 
