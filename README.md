@@ -12,7 +12,7 @@ A sequence diagram, rendered live in the chat:
 
 ![Sequence diagram rendered in chat](docs/sequence-diagram.png)
 
-## Features
+## ✨ Features
 
 - **Live rendering** : a MutationObserver watches the chat DOM and replaces every ` ```mermaid` block with a rendered SVG the moment it appears. All mermaid@11 diagram types: flowcharts, sequence, state, class, ER, mindmaps, timelines, …
 - **Zoom viewer** : click a diagram for full-screen view: wheel zoom, drag pan, reset, Esc to close.
@@ -22,23 +22,23 @@ A sequence diagram, rendered live in the chat:
   ![Error card](docs/error.png)
 - **Agent guidance** : the bundled skill teaches syntax; a prompt nudge steers the agent toward diagrams on "show me / visualize / draw" cues (published as a PromptFragment for non-native harnesses too).
 
-## How it works
+## ⚙️ How it works
 
 ![How it works](docs/how-it-works.png)
 
 A `sidebar-end` webui extension, pinned to `mermaid 11.16.1` from the jsDelivr CDN. No server-side components — no API handlers, no tools, no config.
 
-## Usage
+## 💬 Usage
 
 Nothing to drive. Any ` ```mermaid ` block the agent sends is rendered automatically; flowchart, sequence, and state diagrams each have an asserted [BDD scenario](tests/e2e/features/), and [`docs/BEHAVIOUR.md`](docs/BEHAVIOUR.md) shows each as a screenshot from a passing run. Non-mermaid code blocks are left untouched.
 
 ---
 
-## Installation
+## 📦 Installation
 
 **Plugin Hub** — once listed in the [Plugin Index](https://github.com/agent0ai/a0-plugins): **Settings → Plugins → Mermaid Diagrams → Install**.
 
-**Manual** (Zip)
+**Manual** (Zip) — build it yourself, or grab the zip from the [latest release](https://github.com/agent-zero-plugins/agent-zero-plugin-mermaid-diagrams/releases/latest):
 
 ```bash
 make package        # → dist/mermaid_diagrams.zip
@@ -46,11 +46,13 @@ make package        # → dist/mermaid_diagrams.zip
 
 Then **Settings → Plugins → Install from file** → pick the zip. New chats pick it up immediately; hard-refresh open tabs.
 
-## Configuration
+> **Note**: rendering needs browser access to `cdn.jsdelivr.net` (pinned mermaid 11.16.1, loaded from the CDN). In offline environments diagrams stay as plain code blocks — nothing breaks.
 
-None — no settings, no per-project or per-agent state. Uninstall from the Plugins panel reverts the chat to plain code blocks.
+## 🔧 Configuration
 
-## Development
+None. The plugin has no settings (`default_config.yaml` is intentionally empty), no per-project or per-agent state. Disable/uninstall from the Plugins panel reverts the chat to plain code blocks.
+
+## 🛠️ Development
 
 ```bash
 git clone --recurse-submodules https://github.com/agent-zero-plugins/agent-zero-plugin-mermaid-diagrams
@@ -61,6 +63,8 @@ python -m pytest tests -q    # unit + L1 shape suite (needs tests/_testkit submo
 make e2e                     # full behaviour BDD run on a nested disposable A0 (podman)
 ```
 
+## 🧪 Test layout
+
 | Layer         | Where                              | What                                                                       |
 | ------------- | ---------------------------------- | -------------------------------------------------------------------------- |
 | L1 shape      | `tests/test_plugin_shape.py`       | static validator, deps/A0-API audits, dead hooks                           |
@@ -69,6 +73,6 @@ make e2e                     # full behaviour BDD run on a nested disposable A0 
 
 Specs live in `docs/spec/`. CI runs the whole pyramid including a seam-off red-proof — a scenario that passes without the plugin fails the build.
 
-## License
+## ⚖️ License
 
 Apache-2.0 — see [LICENSE](LICENSE).
