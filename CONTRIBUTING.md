@@ -14,7 +14,7 @@ make install-hooks       # pre-commit hook that runs `make verify`
 ## Workflow
 
 1. Branch off `main`.
-2. Make your change. Plugin source lives under `usr/plugins/mermaid_diagrams/`.
+2. Make your change. The repo root is the plugin source (root layout — `plugin_dir: .`).
 3. **Behaviour first**: if you add/change user-visible behaviour, update `docs/spec/behaviour-spec.md` (add a `BEH-n`), cover it in `docs/spec/e2e.feature.md` and `tests/e2e/features/`, and implement the step. The traceability gate fails any documented behaviour that is neither tested nor tracked-skipped.
 4. Run the gates locally:
    ```bash

@@ -15,7 +15,7 @@ import types
 
 _MOD = (
     pathlib.Path(__file__).resolve().parents[1]
-    / "usr" / "plugins" / "mermaid_diagrams" / "extensions" / "python" / "system_prompt"
+    / "extensions" / "python" / "system_prompt"
     / "_15_mermaid_nudge.py"
 )
 

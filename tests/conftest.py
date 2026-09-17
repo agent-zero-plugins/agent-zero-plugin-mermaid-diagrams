@@ -7,11 +7,12 @@ from pathlib import Path
 import pytest
 
 # Tests exec plugin modules straight from the plugin tree (SourceFileLoader).
-# Without this, the loader writes __pycache__ INTO usr/plugins/, which the
+# Without this, the loader writes __pycache__ INTO the plugin dir, which the
 # static validator rightly flags as a packaging hazard.
 sys.dont_write_bytecode = True
 
 
 @pytest.fixture(scope="session")
 def plugin_dir() -> Path:
-    return Path(__file__).resolve().parent.parent / "usr" / "plugins" / "mermaid_diagrams"
+    # Root layout: the repo root IS the plugin dir (.devkit.yml plugin_dir: .)
+    return Path(__file__).resolve().parent.parent
