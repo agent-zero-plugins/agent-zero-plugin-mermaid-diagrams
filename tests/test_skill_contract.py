@@ -14,7 +14,7 @@ import yaml
 
 _SKILL = (
     pathlib.Path(__file__).resolve().parents[1]
-    / "usr" / "plugins" / "mermaid_diagrams" / "skills" / "mermaid" / "SKILL.md"
+    / "skills" / "mermaid" / "SKILL.md"
 )
 
 
