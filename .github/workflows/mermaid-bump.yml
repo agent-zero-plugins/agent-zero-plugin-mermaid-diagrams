@@ -1,0 +1,124 @@
+# mermaid-bump — propose a pinned-mermaid upgrade, gated by e2e.
+#
+# The plugin pins mermaid in a CDN URL string inside the webui extension
+# (usr/plugins/mermaid_diagrams/extensions/webui/sidebar-end/mermaid-renderer.html).
+# Dependabot cannot see version pins inside URLs, so this workflow does the
+# equivalent job for that one line:
+#
+#   1. read the pinned version from the HTML
+#   2. ask the npm registry for the newest 11.x release
+#   3. if newer: edit the line, push a branch, open a PR
+#
+# plugin-e2e runs on every PR, so the bump PR is automatically gated by the
+# full BDD suite: green ⇒ merge (the pin advances); red ⇒ close — and a red
+# bump PR is the early warning that a new mermaid release is incompatible
+# with A0's page (the exact failure mode that broke rendering in Aug 2026:
+# mermaid 11.17.x's dayjs UMD factory colliding with ace.js's global define).
+#
+# Cadence is deliberately LOW (monthly) and same-major only (11.x): a pin
+# move is a deliberate upgrade, not something that should happen while you
+# sleep — same principle as the devkit-sync workflow (DEC-079). Major
+# upgrades (12.x) stay manual: edit the pin, let e2e judge.
+#
+# Token needs: plain GITHUB_TOKEN with contents+pull-requests write is
+# enough (no App, no PAT) for same-repo branches and PRs.
+name: mermaid-bump
+
+on:
+  schedule:
+    # Monthly, 03:17 UTC on the 1st — off the :00 mark to avoid the herd.
+    - cron: "17 3 1 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: mermaid-bump
+  cancel-in-progress: true
+
+env:
+  PIN_FILE: usr/plugins/mermaid_diagrams/extensions/webui/sidebar-end/mermaid-renderer.html
+  PIN_MAJOR: "11"
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find newest mermaid ${{ env.PIN_MAJOR }}.x vs the pinned one
+        id: versions
+        run: |
+          set -euo pipefail
+          pinned=$(sed -nE 's#.*mermaid@([0-9]+\.[0-9]+\.[0-9]+)/dist/mermaid\.esm\.min\.mjs.*#\1#p' "$PIN_FILE" | head -1)
+          [ -n "$pinned" ] || { echo "No pinned mermaid version found in $PIN_FILE" >&2; exit 1; }
+
+          latest=$(curl -fsS "https://registry.npmjs.org/mermaid" \
+            | jq -r '
+                [.time | to_entries[]
+                  | select(.key | test("^'"$PIN_MAJOR"'\\.[0-9]+\\.[0-9]+$"))
+                  | .key]
+                | sort_by(split(".") | map(tonumber))
+                | last
+              ')
+          [ -n "$latest" ] && [ "$latest" != "null" ] || { echo "No ${PIN_MAJOR}.x releases found in the registry" >&2; exit 1; }
+
+          echo "pinned=$pinned latest=$latest"
+          {
+            echo "pinned=$pinned"
+            echo "latest=$latest"
+            echo "newer=$([ "$latest" != "$pinned" ] && echo yes || echo no)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open bump PR
+        if: steps.versions.outputs.newer == 'yes'
+        env:
+          PINNED: ${{ steps.versions.outputs.pinned }}
+          LATEST: ${{ steps.versions.outputs.latest }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch="chore/bump-mermaid-$LATEST"
+          sed -i "s#mermaid@$PINNED/dist/mermaid.esm.min.mjs#mermaid@$LATEST/dist/mermaid.esm.min.mjs#" "$PIN_FILE"
+
+          if git ls-remote --heads origin "$branch" | grep -q .; then
+            git fetch origin "$branch"
+            git checkout "$branch"
+            if git diff --quiet; then
+              echo "Branch $branch already proposes $LATEST — nothing to do."
+              exit 0
+            fi
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add "$PIN_FILE"
+          git commit -m "chore: bump pinned mermaid $PINNED → $LATEST"
+          git push origin "$branch"
+
+          existing=$(gh pr list --head "$branch" --json number --jq 'length')
+          if [ "$existing" -eq 0 ]; then
+            gh pr create \
+              --title "chore: bump pinned mermaid $PINNED → $LATEST" \
+              --body "Automated same-major (\`${PIN_MAJOR}.x\`) bump of the pinned mermaid CDN import in \`$PIN_FILE\`.
+
+          - **plugin-e2e green** ⇒ merge — the pin advances.
+          - **plugin-e2e red** ⇒ close — the new mermaid is incompatible with A0's page; the current pin stays." \
+              --base main
+          else
+            echo "PR for $branch already open — updated the branch instead."
+          fi
+
+      - name: Summary
+        run: |
+          pinned=${{ steps.versions.outputs.pinned }}
+          latest=${{ steps.versions.outputs.latest }}
+          newer=${{ steps.versions.outputs.newer }}
+          if [ "$newer" = "yes" ]; then
+            echo "Bump PR opened/updated: $pinned → $latest. e2e on the PR is the gate."
+          else
+            echo "Pinned mermaid $pinned is already the newest ${PIN_MAJOR}.x ($latest) — no action."
+          fi
