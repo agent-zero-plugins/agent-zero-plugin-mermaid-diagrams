@@ -1,4 +1,4 @@
 name: mermaid_diagrams
-version: "0.1.2"
+version: "0.1.3"
 summary: Renders Mermaid diagram code blocks as interactive SVGs in chat, with agent skill and behavioral nudges.
 env: []
